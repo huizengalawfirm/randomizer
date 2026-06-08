@@ -18,14 +18,19 @@
         
         .selectors-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             gap: 10px;
             max-width: 500px;
             margin: 0 auto 15px auto;
         }
+        .row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
         select {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             font-size: 14px;
             background: #1c1c3a;
             color: white;
@@ -34,57 +39,23 @@
             outline: none;
         }
         
-        /* Price is Right Reel Styles */
-        .spinner-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px auto;
-            max-width: 500px;
-        }
-        .reel-wrapper {
-            flex: 1;
-            height: 120px;
-            border: 4px solid #ffca28;
-            border-radius: 12px;
-            background: #090914;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 15px rgba(255, 202, 40, 0.2);
-        }
-        /* Win Indicator Pointer Line */
-        .reel-wrapper::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #00e5ff;
-            z-index: 10;
-            box-shadow: 0 0 8px #00e5ff;
-            transform: translateY(-50%);
-        }
-        .reel {
-            position: absolute;
-            width: 100%;
-            top: 0;
-            transition: transform 3s cubic-bezier(0.1, 0.8, 0.1, 1);
-        }
-        .slot-item {
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
+        /* Utility Buttons */
+        .btn-utility {
+            background: #3949ab;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 12px;
             font-weight: bold;
-            padding: 0 4px;
-            box-sizing: border-box;
-            border-bottom: 1px solid #1a1a3a;
-            line-height: 1.2;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 3px 10px rgba(57, 73, 171, 0.3);
+            white-space: nowrap;
         }
-        
-        button {
+        .btn-utility:active { transform: scale(0.95); }
+        /* Main Action Button */
+        .btn-main {
             background: #e91e63;
             color: white;
             border: none;
@@ -96,7 +67,7 @@
             box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
             transition: transform 0.1s;
         }
-        button:active { transform: scale(0.95); }
+        .btn-main:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -105,20 +76,25 @@
     <p>The Ultimate Location Challenge</p>
 
     <div class="selectors-container">
-        <select id="locationSelect" onchange="loadRoundOptions()">
-            <option value="MK">Magic Kingdom</option>
-            <option value="EP">EPCOT</option>
-            <option value="HS">Hollywood Studios</option>
-            <option value="AK">Animal Kingdom</option>
-            <option value="Resorts">Monorail/Skyliner Resorts</option>
-            <option value="Springs">Disney Springs</option>
-        </select>
+        <div class="row">
+            <select id="locationSelect" onchange="loadRoundOptions()">
+                <option value="MK">Magic Kingdom</option>
+                <option value="EP">EPCOT</option>
+                <option value="HS">Hollywood Studios</option>
+                <option value="AK">Animal Kingdom</option>
+                <option value="Resorts">Monorail/Skyliner Resorts</option>
+                <option value="Springs">Disney Springs</option>
+            </select>
+            <button class="btn-utility" onclick="randomizeLocation()">Randomize Location</button>
+        </div>
 
-        <select id="roundSelect" onchange="buildReels()">
-            <option value="Snacks">Round 1: Snacks & Drinks</option>
-            <option value="Shopping">Round 2: Shopping</option>
-            <option value="Activities">Round 3: Rides & Action</option>
-        </select>
+        <div class="row">
+            <select id="roundSelect" onchange="buildReels()">
+                <option value="Snacks">Round 1: Snacks & Drinks</option>
+                <option value="Shopping">Round 2: Shopping</option>
+                <option value="Activities">Round 3: Rides & Action</option>
+            </select>
+        </div>
     </div>
 
     <div class="spinner-container">
@@ -127,174 +103,4 @@
         <div class="reel-wrapper"><div id="reel3" class="reel"></div></div>
     </div>
 
-    <button onclick="spinWheels()">SPIN THE WHEELS</button>
-
-<script>
-// Mega localized dataset mapping perfectly to WDW spots
-const LOCATIONS_DATA = {
-    "MK": {
-        "Snacks": {
-            "Flavor": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey", "Pineapple/Dole", "Salty", "Cinnamon", "Nutty"],
-            "Texture": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Gooey", "Creamy", "Soft-baked", "Fluffy", "Crispy"],
-            "Style": ["Shareable", "On-a-stick", "Mickey-shaped", "Beverage Only", "Fried", "Handheld", "In a Souvenir Cup", "Dipped", "Main Street Classic", "Colorful"]
-        },
-        "Shopping": {
-            "Color": ["Yellow", "Colorful (3+)", "Monochrome", "Neon/Glow", "Pastel", "Gold/Shiny", "Glow-in-the-dark", "Glittery", "Royal Blue", "Princess Pink"],
-            "Type": ["For Home", "Wearable (Shirt)", "An Accessory", "Desk/Office", "Kitchen/Mug", "Plush/Soft", "Ear Headband/Hat", "Collectable Pin", "Bag/Backpack", "Toy/Bubble Wand"],
-            "Theme": ["Fantasyland/Princess", "Villain-themed", "Hero/Tomorrowland", "Retro Nostalgia", "Cute/Kawaii", "Spooky/Haunted Mansion", "Frontier/Western", "Animal/Sidekick", "Classic Animation", "Mickey & Friends"]
-        },
-        "Activities": {
-            "Intensity": ["Thrilling Coaster", "Chill/Relaxing", "Family-friendly", "Spinning/Dizzying", "High-speed", "Mild Drops", "Dark Ride", "Slow-moving", "Mountain Challenge", "Classic/Nostalgic"],
-            "Environment": ["Loud Audio", "Dark/Indoor", "Outdoor Track", "Water-based Splashes", "Elevated Views", "AC Queue", "Immersive Queue", "Tunnels/Underground", "Scented/Mist FX", "Animatronic-heavy"],
-            "Type": ["Seated Ride", "Omnimover", "Interactive/Game", "Live Stage Show", "Character Greeting", "Boat Ride", "Train/Transportation", "Walkthrough", "Outdoor Plaza", "Photo-Op/Castle View"]
-        }
-    },
-    "EP": {
-        "Snacks": {
-            "Flavor": ["International Flavor", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey/Caramel", "Coffee/Matcha", "Salty", "Maple/Honey", "Berry/Fruity"],
-            "Texture": ["Cold", "Warm/Hot", "Crunchy", "Chewy", "Frozen/Slush", "Flaky Pastry", "Creamy/Custard", "Carbonated/Fizzy", "Gelato-like", "Crispy"],
-            "Style": ["World Showcase Festival Item", "On-a-stick/Skewer", "Baked Good", "Alcoholic/Mocktail Drink", "Deep Fried", "Handheld/Street Food", "Served in a Bowl", "Artisanal/Gourmet", "Plant-Based/Vegan Opt.", "Colorful/Neon"]
-        },
-        "Shopping": {
-            "Color": ["Yellow", "Colorful (3+)", "Monochrome", "Neon/Futuristic", "Pastel", "Metallic/Silver", "Purple (Figment!)", "Glittery", "Flag Colors (Country)", "Earth Tones"],
-            "Type": ["For Home", "Wearable Apparel", "An Accessory", "Kitchen/Glassware", "Imported Goods", "Plush/Soft", "Hat/Headwear", "Limited Edition Pin", "Bag/Backpack", "Stationery/Journal"],
-            "Theme": ["Spaceship Earth/Futuristic", "World Showcase/Country Specific", "Space/Sci-Fi", "Retro EPCOT Center", "Cute/Kawaii (Japan)", "Nature/Gardening", "Pixar/Characters", "Figment/Imagination", "Festival-Exclusive", "Classic Animation"]
-        },
-        "Activities": {
-            "Intensity": ["Thrilling/High-Speed", "Chill/Relaxing", "Family-friendly", "Simulated Motion", "Backward Launch", "Mild/No Drops", "Adrenaline-pumping", "Slow-moving Boat", "Educational/Informative", "Atmospheric/Strolling"],
-            "Environment": ["Loud/Soundtrack Focus", "Dark/Indoor", "Outdoor Walk", "Water-based/Aquarium", "High Altitude/Hang Glider", "Misted/AC Queue", "Immersive Pavilion", "Scented Effects", "Wind/Heat Effects", "Panoramic Screen"],
-            "Type": ["Seated Ride", "Screen-based/Simulator", "Interactive Game", "Live Music/Show", "Character Meet & Greet", "Roller Coaster", "Trackless Ride", "Boat Ride", "World Showcase Pavilion Explore", "Photo-Op/Spaceship Earth Backdrop"]
-        }
-    },
-    "HS": {
-        "Snacks": {
-            "Flavor": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey/Fudge", "Toffee/Caramel", "Salty", "Peanut Butter", "Blue/Green Milk Flavor"],
-            "Texture": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Gooey/Melted", "Creamy/Shake", "Fizzy", "Soft/Puffy", "Crispy Fried"],
-            "Style": ["Shareable", "On-a-stick", "Baked/Cookie/NumNum", "Beverage Only", "Deep Fried", "Handheld/Boxed", "Served in a Cup", "Galaxy's Edge Outpost Styled", "Retro Diner Vibe", "Colorful"]
-        },
-        "Shopping": {
-            "Color": ["Yellow", "Colorful", "Dark/Sith-like", "Neon", "Pastel", "Metallic/Chrome", "Glow-in-the-dark", "Glittery", "Vintage/Sepia", "Primary Colors"],
-            "Type": ["For Home", "Wearable/Apparel", "An Accessory", "Desk/Office Decor", "Toy/Lightsaber Parts", "Soft/Plushie", "Hat/Ears", "Pin/Badge", "Bag/Backpack", "Collectible Figure/Droid"],
-            "Theme": ["Star Wars/Galaxy's Edge", "Villain/Dark Side", "Hero/Marvel/Indy", "Retro Hollywood/Vintage", "Toy Story/Pixar", "Spooky/Tower of Terror", "Muppets/Comedy", "Animation History", "Rock & Roll", "Classic Mickey"]
-        },
-        "Activities": {
-            "Intensity": ["Thrilling/Adrenaline", "Chill/Relaxing", "Family-friendly", "Freefall Drop", "High-speed Launch", "Mild Motion", "Stunt-heavy", "Slow-moving", "Intense Inversions", "Immersive Roleplay"],
-            "Environment": ["Loud/Explosions", "Dark/Indoor", "Outdoor Set", "Screen/Media-heavy", "Elevated/High-up", "AC Queue", "Immersive Queue/Base", "Tunnels", "Scented effects", "Wind/Smoke effects"],
-            "Type": ["Seated Ride", "Virtual/Screen-based", "Interactive Element", "Live Stunt/Stage Show", "Character Meet & Greet", "Roller Coaster", "Trackless Vehicle", "Motion Simulator", "Carnival-style Shooter", "Photo-Op/Chinese Theater Backdrop"]
-        }
-    },
-    "AK": {
-        "Snacks": {
-            "Flavor": ["Fruity", "Sour", "Savory/Smoky", "Spicy/Curry", "Sweet", "Chocolatey", "Minty", "Salty", "Cinnamon/Sugar", "Nutty"],
-            "Texture": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen/Slush", "Gooey", "Creamy", "Fizzy", "Soft/Warm", "Crispy"],
-            "Style": ["Shareable Bowl", "On-a-stick/Skewer", "Baked Treats", "Beverage Only", "Grilled/Smoked", "Handheld Wrapper", "Novelty/Souvenir Container", "Dipped/Sauced", "Animal-Print/Themed", "Vibrant Safari Colors"]
-        },
-        "Shopping": {
-            "Color": ["Yellow", "Colorful (3+ colors)", "Monochrome", "Neon/Bioluminescent", "Pastel", "Metallic/Shiny", "Glow-in-the-dark", "Glittery", "Earth Tones/Green/Khaki", "Animal Print"],
-            "Type": ["For Home", "Wearable (Apparel)", "An Accessory", "Desk/Office", "Woodcarving/Handcrafted", "Soft/Plush Animal", "Hat/Sun Protection", "Collectible Pin", "Bag/Backpack", "Outdoor Gear/Bottle"],
-            "Theme": ["Dinosaur-themed", "Yeti/Expedition-themed", "Avatar/Pandora-themed", "Retro/Nostalgic Discovery", "Cute/Kawaii Animals", "Spooky/Creepy Crawly", "Safari/Wilderness", "Conservation/Nature", "Lion King/Harambe", "Classic Character Safari-style"]
-        },
-        "Activities": {
-            "Intensity": ["Thrilling Coaster", "Chill/Relaxing Walk", "Family-friendly", "High-speed Train", "Big Drops", "Bumpy/Off-Road", "Adrenaline-pumping Flight", "Slow-moving Boat", "Animal Encounter", "Emotional/Heartwarming Show"],
-            "Environment": ["Loud/Natural Sounds", "Dark/Indoor", "Outdoor/Natural Elements", "Water-based/Rapids", "High Altitude/Mountain", "Shaded/Misted Queue", "Immersive Jungle/Forest", "Tunnels/Caves", "Scented/Mist effects", "Live Animal Sightings"],
-            "Type": ["Seated Ride", "Bioluminescent/Screen Flight", "Interactive Discovery", "Live Broadway-style Show", "Character Wilderness Greeting", "Roller Coaster", "Safari Truck", "Boat Ride", "Animal Walking Trail", "Photo-Op/Tree of Life Backdrop"]
-        }
-    },
-    "Resorts": {
-        "Snacks": {
-            "Flavor": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey", "Tropical/Coconut", "Salty", "Coffee/Espresso", "Nutty"],
-            "Texture": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Melted/Warm", "Creamy", "Fizzy", "Fluffy/Beignet", "Crispy"],
-            "Style": ["Shareable Board", "On-a-stick", "Baked Pastry/Cupcake", "Specialty Beverage/Coffee", "Deep Fried", "Handheld/Quick Service", "Served in a Bowl", "Lounge Exclusive", "Plant-Based Option", "Signature Monorail/Skyliner item"]
-        },
-        "Shopping": {
-            "Color": ["Yellow", "Colorful", "Monochrome", "Neon", "Pastel/Coastal", "Metallic/Shiny", "Glow", "Glittery", "Navy/Nautical", "Maroon/Elegant"],
-            "Type": ["For Home", "Wearable Lounge Apparel", "An Accessory/Jewelry", "Desk/Stationery", "Kitchenware/Mug", "Soft/Plushie", "Hat/Ears", "Resort-logo Pin", "Tote Bag", "Home Fragrance/Soap"],
-            "Theme": ["Polynesian/Tropical", "Contemporary/Modern", "Grand Floridian/Victorian", "Riviera/European", "Art of Animation/Pixar", "Pop Century/Retro", "Nautical/Yacht & Beach", "Wilderness/Lodge", "Monorail/Skyliner Line", "Character Dining Themed"]
-        },
-        "Activities": {
-            "Intensity": ["Chill/Relaxing", "Family-friendly", "Scenic/Sightseeing", "Slow-moving", "Atmospheric", "Social/Lively", "Restorative", "Self-Guided Explore", "Musical Vibe", "Fast Transportation Sync"],
-            "Environment": ["Loud Lobby/Lounge", "Air-Conditioned Grand Hall", "Outdoor Courtyard/Beach", "Water-side/Marina", "Elevated Roof View", "Misted Pool Area", "Immersive Themed Grounds", "Quiet Walkway", "Scented Lobby (Iconic)", "Campfire/Fireplace Area"],
-            "Type": ["Sit-down Meal/Lounge Visit", "Monorail/Skyliner Ride", "Interactive Arcade/Game", "Live Music/Performer", "Character Meal Greeting", "Boat Launch/Ferry", "Resort Walkthrough/Tour", "Hidden Mickey Hunt", "Campfire Movie/Activity", "Photo-Op/Resort Landmark Backdrop"]
-        }
-    },
-    "Springs": {
-        "Snacks": {
-            "Flavor": ["Fruity", "Sour", "Savory/Barbecue", "Spicy", "Extremely Sweet", "Gourmet Chocolate", "Cookie Dough/Bakery", "Salty", "Peanut Butter/Rich", "Nutty"],
-            "Texture": ["Cold/Ice Cream", "Warm/Hot", "Ultra-Crunchy", "Chewy/Gummy", "Frozen/Slush", "Ooozing/Gooey", "Creamy", "Fizzy", "Fluffy/Donut", "Crispy"],
-            "Style": ["Gigantic Shareable", "On-a-stick/Skewer", "Gourmet Baked Good", "Craft Beverage/Bobas", "Fried Street Food", "Handheld/Paper-bagged", "Served in a Box/Tray", "Food Truck Exclusive", "Plant-Based/Vegan Opt.", "Instagram-worthy Art Food"]
-        },
-        "Shopping": {
-            "Color": ["Yellow", "Rainbow/Colorful", "Black/White Minimalist", "Neon/Bright", "Pastel", "Metallic/Gold", "Olive/Denim", "Glittery", "Trendy Colors", "Cozy Neutral Tones"],
-            "Type": ["For the Home", "Trendy/High-end Apparel", "An Accessory/Jewelry", "Desk/Office Supplies", "Kitchen/Cooking Ware", "Massive Plush/Soft Item", "Customized Hat/Ears", "Collectible Pin/Lanyard", "Designer Bag/Backpack", "Toy/LEGO/Star Wars Brick Set"],
-            "Theme": ["World of Disney/Mega Store", "Super Hero/MarvelHQ", "Star Wars Trading Post", "Vintage/Retro Apparel", "Cute/Kawaii/Plushie", "Spooky/Gothic Trend", "High-End Designer", "Athletic/Activewear", "Cozy/Bath/Spa Style", "Lego/Creative Building"]
-        },
-        "Activities": {
-            "Intensity": ["Chill/Relaxing Stroll", "Family-friendly Entertainment", "Scenic Lakefront Views", "Lively/Upbeat", "Slow-moving Flight", "Interactive Showcase", "Musically Entertaining", "Crowded/Energetic", "Luxury/Premium Experience", "Self-Guided Exploration"],
-            "Environment": ["Loud/Live Music Stage", "Air-Conditioned Mega Store", "Outdoor Promenade", "Water-front Deck", "High Altitude Aerophile Balloon", "Shaded Walkway", "Immersive Restaurant Environment", "Bridges/Waterways", "Scented Specialty Shops", "Bowling Alley/Cinema Soundscapes"],
-            "Type": ["Sit-down Fine Dining/Lounge", "Aerophile Balloon Flight", "Bowling/Interactive Game", "Live Street Musician/Stage", "Amphicar Water Launch Ride", "Mega Store Walkthrough", "Customizer Station (LEGO/M&M)", "Dessert-crawl / Hop", "Outdoor Amphitheater Show", "Photo-Op/Springs Waterway Backdrop"]
-        }
-    }
-};
-
-const ITEM_HEIGHT = 120; 
-
-function generateReelHTML(items) {
-    let html = "";
-    // Build array length up to 40 items to make the spin look long and beautiful
-    for (let i = 0; i < 40; i++) {
-        let item = items[i % items.length];
-        html += `<div class="slot-item">${item}</div>`;
-    }
-    return html;
-}
-
-function loadRoundOptions() {
-    const loc = document.getElementById("locationSelect").value;
-    const roundSelect = document.getElementById("roundSelect");
-    
-    // Change round text label if user is at Disney Springs
-    if (loc === "Springs") {
-        roundSelect.options[2].text = "Round 3: Entertainment & Spots";
-    } else {
-        roundSelect.options[2].text = "Round 3: Rides & Action";
-    }
-    
-    buildReels();
-}
-
-function buildReels() {
-    const loc = document.getElementById("locationSelect").value;
-    const round = document.getElementById("roundSelect").value;
-    
-    const locationData = LOCATIONS_DATA[loc][round];
-    const subClasses = Object.keys(locationData);
-    
-    document.getElementById("reel1").innerHTML = generateReelHTML(locationData[subClasses[0]]);
-    document.getElementById("reel2").innerHTML = generateReelHTML(locationData[subClasses[1]]);
-    document.getElementById("reel3").innerHTML = generateReelHTML(locationData[subClasses[2]]);
-    
-    // Reset back to zero point position smoothly
-    document.querySelectorAll('.reel').forEach(r => {
-        r.style.transition = 'none';
-        r.style.transform = 'translateY(0px)';
-    });
-}
-
-function spinWheels() {
-    document.querySelectorAll('.reel').forEach((reel) => {
-        // Force re-enabling transitions 
-        reel.style.transition = 'transform 3s cubic-bezier(0.1, 0.8, 0.1, 1)';
-        
-        // Target an index way down the array chain (between 20 and 35) to create a high speed blur wheel effect
-        const randomIndex = Math.floor(Math.random() * (35 - 20) + 20);
-        const targetOffset = -(randomIndex * ITEM_HEIGHT);
-        
-        reel.style.transform = `translateY(${targetOffset}px)`;
-    });
-}
-
-// Set up default view on code initialization
-window.onload = loadRoundOptions;
-</script>
-</body>
-</html>
+    <button class="btn-main" onclick="spinWheels()">SPIN THE WHEELS</button>
