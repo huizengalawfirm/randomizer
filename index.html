@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Park Randomizer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #e94560; margin-bottom: 5px; }
+        .round-selector {
+            margin: 15px;
+            padding: 10px;
+            font-size: 16px;
+            background: #16213e;
+            color: white;
+            border: 2px solid #e94560;
+            border-radius: 5px;
+        }
+        /* The Price is Right Reel Container */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px auto;
+            max-width: 500px;
+        }
+        .reel-wrapper {
+            flex: 1;
+            height: 120px;
+            border: 4px solid #e94560;
+            border-radius: 10px;
+            background: #0f172a;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
+        }
+        /* The Center Pointer Line */
+        .reel-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #00fff0;
+            z-index: 10;
+            box-shadow: 0 0 8px #00fff0;
+        }
+        .reel {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            transition: transform 3s cubic-bezier(0.1, 0.8, 0.1, 1); /* Realistic slowdown */
+        }
+        .slot-item {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0 5px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #1e293b;
+        }
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+        button:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <h1>THE RANDOMIZER</h1>
+    <p>Theme Park Challenge</p>
+
+    <select id="roundSelect" class="round-selector" onchange="loadRound()">
+        <option value="Snacks & Drinks">Round 1: Snacks & Drinks</option>
+        <option value="Shopping">Round 2: Shopping</option>
+        <option value="Rides & Activities">Round 3: Rides & Activities</option>
+    </select>
+
+    <div class="spinner-container">
+        <div class="reel-wrapper"><div id="reel1" class="reel"></div></div>
+        <div class="reel-wrapper"><div id="reel2" class="reel"></div></div>
+        <div class="reel-wrapper"><div id="reel3" class="reel"></div></div>
+    </div>
+
+    <button onclick="spinWheels()">SPIN THE WHEELS</button>
+
+<script>
+// Dataset matching your subclass logic
+const DATA = {
+    "Snacks & Drinks": {
+        "Flavor": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey", "Minty", "Salty", "Dark/Bitter", "Nutty"],
+        "Texture": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Gooey", "Creamy", "Fizzy", "Fluffy", "Crispy"],
+        "Style": ["Shareable", "On-a-stick", "Baked Good", "Beverage Only", "Deep Fried", "Handheld", "In a Bowl", "Sauced/Dipped", "Vegan Opt.", "Colorful"]
+    },
+    "Shopping": {
+        "Color": ["Yellow", "Colorful", "Monochrome", "Neon", "Pastel", "Metallic", "Glow Dark", "Glittery", "Earth Tone", "Primary Co."],
+        "Type": ["For Home", "Wearable", "Accessory", "Desk/Office", "Kitchen", "For Car", "Garden Use", "Collectable", "Hat/Ears", "Bag/Backpack"],
+        "Theme": ["Jurassic/Dino", "Villain", "Hero/Marvel", "Retro", "Cute/Kawaii", "Spooky", "Sci-Fi", "Animal", "Wizarding", "Classic Anim."]
+    },
+    "Rides & Activities": {
+        "Intensity": ["Thrilling", "Chill", "Family Opt", "Spinning", "High-speed", "Mild Drops", "Adrenaline", "Slow", "Launch", "Scary"],
+        "Environment": ["Loud", "Dark/Indoor", "Outdoor", "Water-based", "Elevated", "AC Queue", "Immersive Q", "Tunnels", "Scented FX", "Wind/Heat FX"],
+        "Type": ["Seated", "Screen-based", "Interactive", "Live Show", "Meet/Greet", "Coaster", "Trackless", "Boat/Flume", "Carnival", "Photo-Op"]
+    }
+};
+
+const ITEM_HEIGHT = 120; // Matches CSS height
+
+function generateReelHTML(items) {
+    // Repeat list items to make the wheel look infinite while spinning
+    let html = "";
+    for (let i = 0; i < 30; i++) {
+        let item = items[i % items.length];
+        html += `<div class="slot-item">${item}</div>`;
+    }
+    return html;
+}
+
+function loadRound() {
+    const currentRound = document.getElementById("roundSelect").value;
+    const subClasses = Object.keys(DATA[currentRound]);
+    
+    document.getElementById("reel1").innerHTML = generateReelHTML(DATA[currentRound][subClasses[0]]);
+    document.getElementById("reel2").innerHTML = generateReelHTML(DATA[currentRound][subClasses[1]]);
+    document.getElementById("reel3").innerHTML = generateReelHTML(DATA[currentRound][subClasses[2]]);
+    
+    // Reset positions smoothly
+    document.querySelectorAll('.reel').forEach(r => r.style.transform = 'translateY(0px)');
+}
+
+function spinWheels() {
+    document.querySelectorAll('.reel').forEach((reel) => {
+        // Pick a random index between 10 and 25 so it spins at least a full rotation cycle
+        const randomIndex = Math.floor(randomizedValue(10, 24));
+        const targetOffset = -(randomIndex * ITEM_HEIGHT);
+        
+        // Apply spinning transformation
+        reel.style.transform = `translateY(${targetOffset}px)`;
+    });
+}
+
+function randomizedValue(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// Initial Setup
+window.onload = loadRound;
+</script>
+</body>
+</html>
