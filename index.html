@@ -39,7 +39,6 @@
             outline: none;
         }
         
-        /* Utility Buttons */
         .btn-utility {
             background: #3949ab;
             color: white;
@@ -55,7 +54,6 @@
         }
         .btn-utility:active { transform: scale(0.95); }
 
-        /* Price is Right Reel Styles */
         .spinner-container {
             display: flex;
             justify-content: center;
@@ -73,7 +71,6 @@
             overflow: hidden;
             box-shadow: 0 0 15px rgba(255, 202, 40, 0.2);
         }
-        /* Win Indicator Pointer Line */
         .reel-wrapper::before {
             content: '';
             position: absolute;
@@ -91,7 +88,56 @@
             width: 100%;
             top: 0;
             left: 0;
-        <!-- Location Row -->
+            transition: transform 3s cubic-bezier(0.1, 0.8, 0.1, 1);
+        }
+        .slot-item {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 0 4px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #1a1a3a;
+            line-height: 1.2;
+        }
+        
+        .btn-main {
+            background: #e91e63;
+            color: white;
+            border: none;
+            padding: 15px 45px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+            transition: transform 0.1s;
+        }
+        .btn-main:active { transform: scale(0.95); }
+        
+        #error-log {
+            color: #ff5252;
+            background: #2a1212;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px auto;
+            max-width: 500px;
+            display: none;
+            font-size: 12px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>WDW RANDOMIZER</h1>
+    <p>The Ultimate Location Challenge</p>
+
+    <div id="error-log"></div>
+
+    <div class="selectors-container">
         <div class="row">
             <select id="locationSelect" onchange="loadRoundOptions()">
                 <option value="MK">Magic Kingdom</option>
@@ -104,7 +150,6 @@
             <button class="btn-utility" onclick="randomizeLocation()">Randomize Location</button>
         </div>
 
-        <!-- Round Row -->
         <div class="row">
             <select id="roundSelect" onchange="buildReels()">
                 <option value="Snacks">Round 1: Snacks & Drinks</option>
@@ -123,107 +168,108 @@
     <button class="btn-main" onclick="spinWheels()">SPIN THE WHEELS</button>
 
 <script>
+// Safely wrapped data structure
 const LOCATIONS_DATA = {
     "MK": {
         "Snacks": {
-            "c1": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey", "Pineapple/Dole", "Salty", "Cinnamon", "Nutty"],
-            "c2": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Gooey", "Creamy", "Soft-baked", "Fluffy", "Crispy"],
-            "c3": ["Shareable", "On-a-stick", "Mickey-shaped", "Beverage Only", "Fried", "Handheld", "In a Souvenir Cup", "Dipped", "Main Street Classic", "Colorful"]
+            "c1": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey", "Pineapple", "Salty", "Cinnamon", "Nutty"],
+            "c2": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Gooey", "Creamy", "Baked", "Fluffy", "Crispy"],
+            "c3": ["Shareable", "On-a-stick", "Mickey Shaped", "Beverage Only", "Deep Fried", "Handheld", "Souvenir Cup", "Dipped", "Classic Park", "Colorful"]
         },
         "Shopping": {
-            "c1": ["Yellow", "Colorful (3+)", "Monochrome", "Neon/Glow", "Pastel", "Gold/Shiny", "Glow-in-the-dark", "Glittery", "Royal Blue", "Princess Pink"],
-            "c2": ["For Home", "Wearable (Shirt)", "An Accessory", "Desk/Office", "Kitchen/Mug", "Plush/Soft", "Ear Headband/Hat", "Collectable Pin", "Bag/Backpack", "Toy/Bubble Wand"],
-            "c3": ["Fantasyland/Princess", "Villain-themed", "Hero/Tomorrowland", "Retro Nostalgia", "Cute/Kawaii", "Spooky/Haunted Mansion", "Frontier/Western", "Animal/Sidekick", "Classic Animation", "Mickey & Friends"]
+            "c1": ["Yellow", "Colorful", "Monochrome", "Neon Glow", "Pastel", "Shiny Gold", "Glow Dark", "Glittery", "Royal Blue", "Pink"],
+            "c2": ["For Home", "Wearable Shirt", "Accessory", "Desk Office", "Kitchen Mug", "Plush Soft", "Ears Hat", "Collectible Pin", "Backpack", "Bubble Wand"],
+            "c3": ["Princess", "Villain", "Tomorrowland", "Retro Nostalgia", "Kawaii Cute", "Spooky Haunted", "Western Frontier", "Animal Sidekick", "Classic Animation", "Mickey Friends"]
         },
         "Activities": {
-            "c1": ["Thrilling Coaster", "Chill/Relaxing", "Family-friendly", "Spinning/Dizzying", "High-speed", "Mild Drops", "Dark Ride", "Slow-moving", "Mountain Challenge", "Classic/Nostalgic"],
-            "c2": ["Loud Audio", "Dark/Indoor", "Outdoor Track", "Water-based Splashes", "Elevated Views", "AC Queue", "Immersive Queue", "Tunnels/Underground", "Scented/Mist FX", "Animatronic-heavy"],
-            "c3": ["Seated Ride", "Omnimover", "Interactive/Game", "Live Stage Show", "Character Greeting", "Boat Ride", "Train/Transportation", "Walkthrough", "Outdoor Plaza", "Photo-Op/Castle View"]
+            "c1": ["Coaster Thrill", "Chill Relaxing", "Family Friendly", "Spinning", "High speed", "Mild Drops", "Dark Ride", "Slow moving", "Mountain Theme", "Classic Park"],
+            "c2": ["Loud Audio", "Dark Indoor", "Outdoor Track", "Water Splash", "Elevated Views", "AC Queue", "Immersive Line", "Underground", "Scented FX", "Animatronics"],
+            "c3": ["Seated Ride", "Omnimover", "Interactive Game", "Live Stage Show", "Character Meet", "Boat Ride", "Train Transit", "Walkthrough", "Outdoor Plaza", "Castle Backdrop"]
         }
     },
     "EP": {
         "Snacks": {
-            "c1": ["International Flavor", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey/Caramel", "Coffee/Matcha", "Salty", "Maple/Honey", "Berry/Fruity"],
-            "c2": ["Cold", "Warm/Hot", "Crunchy", "Chewy", "Frozen/Slush", "Flaky Pastry", "Creamy/Custard", "Carbonated/Fizzy", "Gelato-like", "Crispy"],
-            "c3": ["World Showcase Festival Item", "On-a-stick/Skewer", "Baked Good", "Alcoholic/Mocktail Drink", "Deep Fried", "Handheld/Street Food", "Served in a Bowl", "Artisanal/Gourmet", "Plant-Based/Vegan Opt.", "Colorful/Neon"]
+            "c1": ["World Showcase", "Sour", "Savory", "Spicy", "Sweet", "Caramel Fudge", "Coffee Matcha", "Salty", "Maple Honey", "Berry Fruity"],
+            "c2": ["Cold", "Warm Hot", "Crunchy", "Chewy", "Frozen Slush", "Flaky Pastry", "Creamy Custard", "Fizzy Carbonated", "Gelato Style", "Crispy"],
+            "c3": ["Festival Item", "On-a-stick", "Baked Treat", "Drink Mocktail", "Deep Fried", "Street Food", "Served in Bowl", "Gourmet Artisan", "Plant Based", "Neon Colorful"]
         },
         "Shopping": {
-            "c1": ["Yellow", "Colorful (3+)", "Monochrome", "Neon/Futuristic", "Pastel", "Metallic/Silver", "Purple (Figment!)", "Glittery", "Flag Colors (Country)", "Earth Tones"],
-            "c2": ["For Home", "Wearable Apparel", "An Accessory", "Kitchen/Glassware", "Imported Goods", "Plush/Soft", "Hat/Headwear", "Limited Edition Pin", "Bag/Backpack", "Stationery/Journal"],
-            "c3": ["Spaceship Earth/Futuristic", "World Showcase/Country Specific", "Space/Sci-Fi", "Retro EPCOT Center", "Cute/Kawaii (Japan)", "Nature/Gardening", "Pixar/Characters", "Figment/Imagination", "Festival-Exclusive", "Classic Animation"]
+            "c1": ["Yellow", "Multi Colored", "Monochrome", "Futuristic Neon", "Pastel", "Silver Metallic", "Figment Purple", "Glittery Sparkle", "Flag Colors", "Earth Tones"],
+            "c2": ["For Home", "Wearable Apparel", "An Accessory", "Glassware Mug", "Imported Goods", "Soft Plush", "Hat Headwear", "Limited Pin", "Bag Backpack", "Stationery Notebook"],
+            "c3": ["Spaceship Earth", "Country Specific", "Space SciFi", "Retro EPCOT Center", "Japan Kawaii", "Garden Nature", "Pixar Character", "Imagination Theme", "Festival Merch", "Classic Disney"]
         },
         "Activities": {
-            "c1": ["Thrilling/High-Speed", "Chill/Relaxing", "Family-friendly", "Simulated Motion", "Backward Launch", "Mild/No Drops", "Adrenaline-pumping", "Slow-moving Boat", "Educational/Informative", "Atmospheric/Strolling"],
-            "c2": ["Loud/Soundtrack Focus", "Dark/Indoor", "Outdoor Walk", "Water-based/Aquarium", "High Altitude/Hang Glider", "Misted/AC Queue", "Immersive Pavilion", "Scented Effects", "Wind/Heat Effects", "Panoramic Screen"],
-            "c3": ["Seated Ride", "Screen-based/Simulator", "Interactive Game", "Live Music/Show", "Character Meet & Greet", "Roller Coaster", "Trackless Ride", "Boat Ride", "World Showcase Pavilion Explore", "Photo-Op/Spaceship Earth Backdrop"]
+            "c1": ["High Speed Thrill", "Chill Relaxing", "Family Friendly", "Simulated Motion", "Backward Launch", "No Drops", "Adrenaline Peak", "Slow Boat Ride", "Educational", "Atmospheric Stroll"],
+            "c2": ["Loud Audio Focus", "Dark Indoor", "Outdoor Walk", "Aquarium Water", "Hang Glider Vibe", "Misted AC Line", "Immersive Pavilion", "Scented FX", "Wind Heat FX", "Wide Screen"],
+            "c3": ["Seated Ride", "Screen Simulator", "Interactive Game", "Live Music Show", "Character Greeting", "Roller Coaster", "Trackless Car", "Boat Journey", "Pavilion Explore", "Spaceship Earth View"]
         }
     },
     "HS": {
         "Snacks": {
-            "c1": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey/Fudge", "Toffee/Caramel", "Salty", "Peanut Butter", "Blue/Green Milk Flavor"],
-            "c2": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Gooey/Melted", "Creamy/Shake", "Fizzy", "Soft/Puffy", "Crispy Fried"],
-            "c3": ["Shareable", "On-a-stick", "Baked/Cookie/NumNum", "Beverage Only", "Deep Fried", "Handheld/Boxed", "Served in a Cup", "Galaxy's Edge Outpost Styled", "Retro Diner Vibe", "Colorful"]
+            "c1": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Fudge Chocolate", "Toffee Caramel", "Salty", "Peanut Butter", "Galaxy Milk Flavor"],
+            "c2": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Melted Gooey", "Creamy Shake", "Fizzy", "Soft Puffy", "Crispy Fried"],
+            "c3": ["Shareable", "On-a-stick", "NumNum Cookie", "Beverage Only", "Deep Fried", "Handheld Boxed", "Served in Cup", "Batuu Outpost Style", "Retro Diner Vibe", "Neon Aesthetic"]
         },
         "Shopping": {
-            "c1": ["Yellow", "Colorful", "Dark/Sith-like", "Neon", "Pastel", "Metallic/Chrome", "Glow-in-the-dark", "Glittery", "Vintage/Sepia", "Primary Colors"],
-            "c2": ["For Home", "Wearable/Apparel", "An Accessory", "Desk/Office Decor", "Toy/Lightsaber Parts", "Soft/Plushie", "Hat/Ears", "Pin/Badge", "Bag/Backpack", "Collectible Figure/Droid"],
-            "c3": ["Star Wars/Galaxy's Edge", "Villain/Dark Side", "Hero/Marvel/Indy", "Retro Hollywood/Vintage", "Toy Story/Pixar", "Spooky/Tower of Terror", "Muppets/Comedy", "Animation History", "Rock & Roll", "Classic Mickey"]
+            "c1": ["Yellow", "Colorful", "Sith Dark Side", "Neon", "Pastel", "Chrome Metallic", "Glow in Dark", "Glittery", "Vintage Sepia", "Primary Colors"],
+            "c2": ["For Home", "Wearable Apparel", "An Accessory", "Desk Decor", "Toy Lightsaber", "Soft Plushie", "Hat Ears", "Pin Badge", "Bag Backpack", "Droid Collectible"],
+            "c3": ["Galaxy Edge", "Dark Side Villain", "Hero Marvel Indy", "Vintage Hollywood", "Toy Story Pixar", "Tower of Terror", "Muppets Comedy", "Animation History", "Rock and Roll", "Classic Mickey"]
         },
         "Activities": {
-            "c1": ["Thrilling/Adrenaline", "Chill/Relaxing", "Family-friendly", "Freefall Drop", "High-speed Launch", "Mild Motion", "Stunt-heavy", "Slow-moving", "Intense Inversions", "Immersive Roleplay"],
-            "c2": ["Loud/Explosions", "Dark/Indoor", "Outdoor Set", "Screen/Media-heavy", "Elevated/High-up", "AC Queue", "Immersive Queue/Base", "Tunnels", "Scented effects", "Wind/Smoke effects"],
-            "c3": ["Seated Ride", "Virtual/Screen-based", "Interactive Element", "Live Stunt/Stage Show", "Character Meet & Greet", "Roller Coaster", "Trackless Vehicle", "Motion Simulator", "Carnival-style Shooter", "Photo-Op/Chinese Theater Backdrop"]
+            "c1": ["Thrilling Adrenaline", "Chill Relaxing", "Family Friendly", "Freefall Drop", "High Speed Launch", "Mild Motion", "Stunt Heavy", "Slow Moving", "Inversions Loop", "Immersive Roleplay"],
+            "c2": ["Loud Audio FX", "Dark Indoor", "Outdoor Set", "Screen Media Heavy", "Elevated Track", "AC Queue Rooms", "Immersive Outpost", "Tunnels", "Scented FX", "Smoke Wind FX"],
+            "c3": ["Seated Ride", "Screen Simulator", "Interactive Component", "Live Stunt Show", "Character Meet", "Roller Coaster", "Trackless Vehicle", "Motion Simulator", "Carnival Shooter", "Theater Backdrop"]
         }
     },
     "AK": {
         "Snacks": {
-            "c1": ["Fruity", "Sour", "Savory/Smoky", "Spicy/Curry", "Sweet", "Chocolatey", "Minty", "Salty", "Cinnamon/Sugar", "Nutty"],
-            "c2": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen/Slush", "Gooey", "Creamy", "Fizzy", "Soft/Warm", "Crispy"],
-            "c3": ["Shareable Bowl", "On-a-stick/Skewer", "Baked Treats", "Beverage Only", "Grilled/Smoked", "Handheld Wrapper", "Novelty/Souvenir Container", "Dipped/Sauced", "Animal-Print/Themed", "Vibrant Safari Colors"]
+            "c1": ["Fruity", "Sour", "Smoky Savory", "Curry Spicy", "Sweet", "Chocolatey", "Minty", "Salty", "Cinnamon Sugar", "Nutty"],
+            "c2": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen Slush", "Gooey", "Creamy", "Fizzy", "Warm Soft", "Crispy"],
+            "c3": ["Shareable Bowl", "On-a-stick Skewer", "Baked Treats", "Beverage Only", "Grilled Smoked", "Handheld Wrapper", "Souvenir Novelty", "Dipped Sauced", "Animal Themed", "Safari Colors"]
         },
         "Shopping": {
-            "c1": ["Yellow", "Colorful (3+ colors)", "Monochrome", "Neon/Bioluminescent", "Pastel", "Metallic/Shiny", "Glow-in-the-dark", "Glittery", "Earth Tones/Green/Khaki", "Animal Print"],
-            "c2": ["For Home", "Wearable (Apparel)", "An Accessory", "Desk/Office", "Woodcarving/Handcrafted", "Soft/Plush Animal", "Hat/Sun Protection", "Collectible Pin", "Bag/Backpack", "Outdoor Gear/Bottle"],
-            "c3": ["Dinosaur-themed", "Yeti/Expedition-themed", "Avatar/Pandora-themed", "Retro/Nostalgic Discovery", "Cute/Kawaii Animals", "Spooky/Creepy Crawly", "Safari/Wilderness", "Conservation/Nature", "Lion King/Harambe", "Classic Character Safari-style"]
+            "c1": ["Yellow", "Colorful 3 plus", "Monochrome", "Bioluminescent", "Pastel", "Shiny Metallic", "Glow in Dark", "Glittery", "Khaki Green Earth", "Animal Print"],
+            "c2": ["For Home", "Wearable Apparel", "An Accessory", "Desk Office", "Handcrafted Wood", "Plush Animal", "Sun Protection Hat", "Collectible Pin", "Bag Backpack", "Outdoor Bottle"],
+            "c3": ["Dinosaur Theme", "Yeti Expedition", "Pandora Avatar", "Nostalgic Discovery", "Cute Animals", "Creepy Crawly", "Safari Wilderness", "Conservation Nature", "Lion King", "Safari Character"]
         },
         "Activities": {
-            "c1": ["Thrilling Coaster", "Chill/Relaxing Walk", "Family-friendly", "High-speed Train", "Big Drops", "Bumpy/Off-Road", "Adrenaline-pumping Flight", "Slow-moving Boat", "Animal Encounter", "Emotional/Heartwarming Show"],
-            "c2": ["Loud/Natural Sounds", "Dark/Indoor", "Outdoor/Natural Elements", "Water-based/Rapids", "High Altitude/Mountain", "Shaded/Misted Queue", "Immersive Jungle/Forest", "Tunnels/Caves", "Scented/Mist effects", "Live Animal Sightings"],
-            "c3": ["Seated Ride", "Bioluminescent/Screen Flight", "Interactive Discovery", "Live Broadway-style Show", "Character Wilderness Greeting", "Roller Coaster", "Safari Truck", "Boat Ride", "Animal Walking Trail", "Photo-Op/Tree of Life Backdrop"]
+            "c1": ["Thrilling Coaster", "Chill Relaxing Walk", "Family Friendly", "High Speed Train", "Big Drops", "Bumpy Off Road", "Adrenaline Flight", "Slow Boat Ride", "Animal Encounter", "Broadway Stage Show"],
+            "c2": ["Natural Sounds", "Dark Indoor", "Natural Outdoor", "River Rapids", "High Mountain", "Shaded Misted Line", "Immersive Jungle", "Caves Tunnels", "Mist Spray FX", "Live Animals"],
+            "c3": ["Seated Ride", "Screen Flight", "Interactive Station", "Live Theater Show", "Wilderness Greeting", "Roller Coaster", "Safari Truck", "Boat Ride", "Walking Trail", "Tree of Life Backdrop"]
         }
     },
     "Resorts": {
         "Snacks": {
-            "c1": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey", "Tropical/Coconut", "Salty", "Coffee/Espresso", "Nutty"],
-            "c2": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Melted/Warm", "Creamy", "Fizzy", "Fluffy/Beignet", "Crispy"],
-            "c3": ["Shareable Board", "On-a-stick", "Baked Pastry/Cupcake", "Specialty Beverage/Coffee", "Deep Fried", "Handheld/Quick Service", "Served in a Bowl", "Lounge Exclusive", "Plant-Based Option", "Signature Monorail/Skyliner item"]
+            "c1": ["Fruity", "Sour", "Savory", "Spicy", "Sweet", "Chocolatey", "Tropical Coconut", "Salty", "Espresso Coffee", "Nutty"],
+            "c2": ["Cold", "Hot", "Crunchy", "Chewy", "Frozen", "Warm Melted", "Creamy", "Fizzy", "Beignet Fluffy", "Crispy"],
+            "c3": ["Shareable Board", "On-a-stick", "Baked Cupcake", "Specialty Coffee", "Deep Fried", "Quick Service Meal", "Served in Bowl", "Lounge Exclusive", "Plant Based", "Transportation Sync"]
         },
         "Shopping": {
-            "c1": ["Yellow", "Colorful", "Monochrome", "Neon", "Pastel/Coastal", "Metallic/Shiny", "Glow", "Glittery", "Navy/Nautical", "Maroon/Elegant"],
-            "c2": ["For Home", "Wearable Lounge Apparel", "An Accessory/Jewelry", "Desk/Stationery", "Kitchenware/Mug", "Soft/Plushie", "Hat/Ears", "Resort-logo Pin", "Tote Bag", "Home Fragrance/Soap"],
-            "c3": ["Polynesian/Tropical", "Contemporary/Modern", "Grand Floridian/Victorian", "Riviera/European", "Art of Animation/Pixar", "Pop Century/Retro", "Nautical/Yacht & Beach", "Wilderness/Lodge", "Monorail/Skyliner Line", "Character Dining Themed"]
+            "c1": ["Yellow", "Colorful", "Monochrome", "Neon", "Coastal Pastel", "Shiny Metallic", "Glow", "Glittery", "Nautical Navy", "Elegant Maroon"],
+            "c2": ["For Home", "Lounge Apparel", "Jewelry Accessory", "Stationery Desk", "Kitchenware Mug", "Soft Plushie", "Logo Hat Ears", "Resort Pin", "Tote Bag", "Home Fragrance Soap"],
+            "c3": ["Tropical Island", "Modern Design", "Victorian Elegance", "European Riviera", "Pixar Animation", "Retro Pop Century", "Yacht Beach Club", "Wilderness Lodge", "Monorail Skyliner", "Character Dining"]
         },
         "Activities": {
-            "c1": ["Chill/Relaxing", "Family-friendly", "Scenic/Sightseeing", "Slow-moving", "Atmospheric", "Social/Lively", "Restorative", "Self-Guided Explore", "Musical Vibe", "Fast Transportation Sync"],
-            "c2": ["Loud Lobby/Lounge", "Air-Conditioned Grand Hall", "Outdoor Courtyard/Beach", "Water-side/Marina", "Elevated Roof View", "Misted Pool Area", "Immersive Themed Grounds", "Quiet Walkway", "Scented Lobby (Iconic)", "Campfire/Fireplace Area"],
-            "c3": ["Sit-down Meal/Lounge Visit", "Monorail/Skyliner Ride", "Interactive Arcade/Game", "Live Music/Performer", "Character Meal Greeting", "Boat Launch/Ferry", "Resort Walkthrough/Tour", "Hidden Mickey Hunt", "Campfire Movie/Activity", "Photo-Op/Resort Landmark Backdrop"]
+            "c1": ["Chill Relaxing", "Family Friendly", "Scenic Sightseeing", "Slow Moving", "Atmospheric", "Social Lively", "Restorative", "Self Guided Explore", "Musical Vibe", "Transit Sync Challenge"],
+            "c2": ["Loud Lobby Lounge", "AC Grand Hall", "Outdoor Courtyard", "Water Marina Side", "Elevated Roof View", "Misted Pool Deck", "Themed Grounds", "Quiet Walkway", "Iconic Scented Hall", "Campfire Fireplace"],
+            "c3": ["Sitdown Meal Lounge", "Monorail Skyliner Ride", "Interactive Arcade", "Live Performer", "Character Meal", "Ferry Boat Launch", "Resort Tour Walk", "Hidden Mickey Hunt", "Campfire Movie", "Resort Landmark View"]
         }
     },
     "Springs": {
         "Snacks": {
-            "c1": ["Fruity", "Sour", "Savory/Barbecue", "Spicy", "Extremely Sweet", "Gourmet Chocolate", "Cookie Dough/Bakery", "Salty", "Peanut Butter/Rich", "Nutty"],
-            "c2": ["Cold/Ice Cream", "Warm/Hot", "Ultra-Crunchy", "Chewy/Gummy", "Frozen/Slush", "Ooozing/Gooey", "Creamy", "Fizzy", "Fluffy/Donut", "Crispy"],
-            "c3": ["Gigantic Shareable", "On-a-stick/Skewer", "Gourmet Baked Good", "Craft Beverage/Bobas", "Fried Street Food", "Handheld/Paper-bagged", "Served in a Box/Tray", "Food Truck Exclusive", "Plant-Based/Vegan Opt.", "Instagram-worthy Art Food"]
+            "c1": ["Fruity", "Sour", "Barbecue Savory", "Spicy", "Extremely Sweet", "Gourmet Chocolate", "Cookie Dough Bakery", "Salty", "Rich Peanut Butter", "Nutty"],
+            "c2": ["Cold Ice Cream", "Warm Hot", "Ultra Crunchy", "Gummy Chewy", "Frozen Slush", "Oozing Gooey", "Creamy", "Fizzy", "Donut Fluffy", "Crispy"],
+            "c3": ["Gigantic Shareable", "On-a-stick Skewer", "Gourmet Baked", "Craft Boba Drink", "Fried Street Food", "Paper Bag Handheld", "Served in Box Tray", "Food Truck Find", "Plant Based Item", "Instagram Food Art"]
         },
         "Shopping": {
-            "c1": ["Yellow", "Rainbow/Colorful", "Black/White Minimalist", "Neon/Bright", "Pastel", "Metallic/Gold", "Olive/Denim", "Glittery", "Trendy Colors", "Cozy Neutral Tones"],
-            "c2": ["For the Home", "Trendy/High-end Apparel", "An Accessory/Jewelry", "Desk/Office Supplies", "Kitchen/Cooking Ware", "Massive Plush/Soft Item", "Customized Hat/Ears", "Collectible Pin/Lanyard", "Designer Bag/Backpack", "Toy/LEGO/Star Wars Brick Set"],
-            "c3": ["World of Disney/Mega Store", "Super Hero/MarvelHQ", "Star Wars Trading Post", "Vintage/Retro Apparel", "Cute/Kawaii/Plushie", "Spooky/Gothic Trend", "High-End Designer", "Athletic/Activewear", "Cozy/Bath/Spa Style", "Lego/Creative Building"]
+            "c1": ["Yellow", "Rainbow Colorful", "Minimalist Mono", "Bright Neon", "Pastel", "Gold Metallic", "Olive Denim", "Glittery", "Trendy Colors", "Neutral Tones"],
+            "c2": ["For Home", "High End Apparel", "Jewelry Accessory", "Office Supplies", "Cooking Ware", "Massive Plush", "Customized Ears Hat", "Collectible Pin", "Designer Backpack", "LEGO Star Wars Set"],
+            "c3": ["World of Disney Mega", "Marvel HQ Hero", "Star Wars Trading", "Vintage Retro Clothes", "Kawaii Plushie Shop", "Gothic Spooky Trend", "High End Designer", "Activewear Athletic", "Bath Spa Specialty", "Creative Building Store"]
         },
         "Activities": {
-            "c1": ["Chill/Relaxing Stroll", "Family-friendly Entertainment", "Scenic Lakefront Views", "Lively/Upbeat", "Slow-moving Flight", "Interactive Showcase", "Musically Entertaining", "Crowded/Energetic", "Luxury/Premium Experience", "Self-Guided Exploration"],
-            "c2": ["Loud/Live Music Stage", "Air-Conditioned Mega Store", "Outdoor Promenade", "Water-front Deck", "High Altitude Aerophile Balloon", "Shaded Walkway", "Immersive Restaurant Environment", "Bridges/Waterways", "Scented Specialty Shops", "Bowling Alley/Cinema Soundscapes"],
-            "c3": ["Sit-down Fine Dining/Lounge", "Aerophile Balloon Flight", "Bowling/Interactive Game", "Live Street Musician/Stage", "Amphicar Water Launch Ride", "Mega Store Walkthrough", "Customizer Station (LEGO/M&M)", "Dessert-crawl / Hop", "Outdoor Amphitheater Show", "Photo-Op/Springs Waterway Backdrop"]
+            "c1": ["Chill Relaxing Stroll", "Family Entertainment", "Scenic Lakefront", "Lively Upbeat", "Slow Flight Balloon", "Interactive Showcase", "Musical Stroll", "Energetic Crowd", "Premium Experience", "Self Guided Explore"],
+            "c2": ["Live Music Stage", "AC Mega Store", "Outdoor Promenade", "Waterfront Deck", "High Altitude Flight", "Shaded Walkway", "Themed Restaurant", "Bridges Waterways", "Scented Retail Shop", "Bowling Cinema Vibe"],
+            "c3": ["Fine Dining Lounge", "Aerophile Balloon Ride", "Bowling Arcade Game", "Live Street Musician", "Amphicar Water Launch", "Mega Store Explore", "Customizer Station", "Dessert Crawl Hop", "Amphitheater Show", "Springs Water Backdrop"]
         }
     }
 };
@@ -231,6 +277,7 @@ const LOCATIONS_DATA = {
 const ITEM_HEIGHT = 120; 
 
 function generateReelHTML(items) {
+    if(!items || items.length === 0) return '<div class="slot-item">Empty</div>';
     let html = "";
     for (let i = 0; i < 40; i++) {
         let item = items[i % items.length];
@@ -240,51 +287,81 @@ function generateReelHTML(items) {
 }
 
 function randomizeLocation() {
-    const dropdown = document.getElementById("locationSelect");
-    const randomIndex = Math.floor(Math.random() * dropdown.options.length);
-    dropdown.selectedIndex = randomIndex;
-    loadRoundOptions();
+    try {
+        const dropdown = document.getElementById("locationSelect");
+        const randomIndex = Math.floor(Math.random() * dropdown.options.length);
+        dropdown.selectedIndex = randomIndex;
+        loadRoundOptions();
+    } catch(err) {
+        logError("randomizeLocation", err);
+    }
 }
 
 function loadRoundOptions() {
-    const loc = document.getElementById("locationSelect").value;
-    const roundSelect = document.getElementById("roundSelect");
-    
-    if (loc === "Springs") {
-        roundSelect.options[2].text = "Round 3: Entertainment & Spots";
-    } else {
-        roundSelect.options[2].text = "Round 3: Rides & Action";
+    try {
+        const loc = document.getElementById("locationSelect").value;
+        const roundSelect = document.getElementById("roundSelect");
+        
+        if (loc === "Springs") {
+            roundSelect.options[2].text = "Round 3: Entertainment & Spots";
+        } else {
+            roundSelect.options[2].text = "Round 3: Rides & Action";
+        }
+        
+        buildReels();
+    } catch(err) {
+        logError("loadRoundOptions", err);
     }
-    
-    buildReels();
 }
 
 function buildReels() {
-    const loc = document.getElementById("locationSelect").value;
-    const round = document.getElementById("roundSelect").value;
-    
-    const locationData = LOCATIONS_DATA[loc][round];
-    
-    document.getElementById("reel1").innerHTML = generateReelHTML(locationData["c1"]);
-    document.getElementById("reel2").innerHTML = generateReelHTML(locationData["c2"]);
-    document.getElementById("reel3").innerHTML = generateReelHTML(locationData["c3"]);
-    
-    document.querySelectorAll('.reel').forEach(r => {
-        r.style.transition = 'none';
-        r.style.transform = 'translateY(0px)';
-    });
+    try {
+        const loc = document.getElementById("locationSelect").value;
+        const round = document.getElementById("roundSelect").value;
+        
+        const locationData = LOCATIONS_DATA[loc][round];
+        
+        document.getElementById("reel1").innerHTML = generateReelHTML(locationData["c1"]);
+        document.getElementById("reel2").innerHTML = generateReelHTML(locationData["c2"]);
+        document.getElementById("reel3").innerHTML = generateReelHTML(locationData["c3"]);
+        
+        document.querySelectorAll('.reel').forEach(r => {
+            r.style.transition = 'none';
+            r.style.transform = 'translateY(0px)';
+        });
+    } catch(err) {
+        logError("buildReels", err);
+    }
 }
 
 function spinWheels() {
-    document.querySelectorAll('.reel').forEach((reel) => {
-        reel.style.transition = 'transform 3s cubic-bezier(0.1, 0.8, 0.1, 1)';
-        const randomIndex = Math.floor(Math.random() * (35 - 20) + 20);
-        const targetOffset = -(randomIndex * ITEM_HEIGHT);
-        reel.style.transform = `translateY(${targetOffset}px)`;
-    });
+    try {
+        document.querySelectorAll('.reel').forEach((reel) => {
+            reel.style.transition = 'transform 3s cubic-bezier(0.1, 0.8, 0.1, 1)';
+            const randomIndex = Math.floor(Math.random() * (35 - 20) + 20);
+            const targetOffset = -(randomIndex * ITEM_HEIGHT);
+            reel.style.transform = `translateY(${targetOffset}px)`;
+        });
+    } catch(err) {
+        logError("spinWheels", err);
+    }
 }
 
-window.onload = loadRoundOptions;
+function logError(action, error) {
+    const logBox = document.getElementById("error-log");
+    logBox.style.display = "block";
+    logBox.innerHTML = `<strong>Error in execution (${action}):</strong> ${error.message}`;
+    console.error(error);
+}
+
+// Initial deployment setup
+window.onload = function() {
+    try {
+        loadRoundOptions();
+    } catch(err) {
+        logError("window.onload", err);
+    }
+};
 </script>
 </body>
 </html>
